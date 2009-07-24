@@ -5,10 +5,10 @@ class SubversionedTextField(TextField):
 class SubversionedMixin(object):
     def save(self, *args, **kw):
         from django.conf import settings
-        svn_checkout_dir = settings.SVN_CHECKOUT_DIR
-        svn_repo_location = settings.SVN_REPO_LOCATION
+        svn_checkout_dir = settings.SVNDJANGO_CHECKOUT_DIR
+        svn_repo_location = None #sven bug - this is unused
 
-        if getattr(settings, 'SVN_SILENT_FAILURES', None) is True:
+        if getattr(settings, 'SVNDJANGO_SILENT_FAILURES', None) is True:
             try:
                 save_to_svn(self,
                             default_name_mapper, default_serializer,
@@ -21,16 +21,23 @@ class SubversionedMixin(object):
                         svn_checkout_dir, svn_repo_location)
             
 
+from django.db import models
+class SubversionedModel(models.Model, SubversionedMixin):
+    def save(self, *args, **kw):
+        models.Model.save(self, *args, **kw)
+        SubversionedMixin.save(self, *args, **kw)
+
+
 class SVNDoc(object):
     def save(self, *args, **kw):
         versioned_fields = (i.name for i in self._meta.fields
                             if isinstance(i, SubversionedTextField))
         from django.conf import settings
-        svn_checkout_dir = settings.SVN_CHECKOUT_DIR
-        svn_repo_location = settings.SVN_REPO_LOCATION
+        svn_checkout_dir = settings.SVNDJANGO_CHECKOUT_DIR
+        svn_repo_location = None #sven bug - this is unused
         
         for field in versioned_fields:
-            if getattr(settings, 'SVN_SILENT_FAILURES', None) is True:
+            if getattr(settings, 'SVNDJANGO_SILENT_FAILURES', None) is True:
                 try:
                     save_to_svn(self,
                                 attribute_name_mapper(field),
@@ -43,13 +50,6 @@ class SVNDoc(object):
                             attribute_name_mapper(field),
                             attribute_serializer(field),
                             svn_checkout_dir, svn_repo_location)
-
-
-from django.db import models
-class SubversionedModel(models.Model, SubversionedMixin):
-    def save(self, *args, **kw):
-        models.Model.save(self, *args, **kw)
-        SubversionedMixin.save(self, *args, **kw)
 
 def save_to_svn(obj,
                 name_mapper, serializer,
