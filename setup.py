@@ -24,6 +24,7 @@ setup(name='svndjango',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
+        'sven',
       ],
       entry_points="""
       """,
