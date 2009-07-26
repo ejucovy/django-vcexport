@@ -61,14 +61,9 @@ def save_to_svn(obj,
 
     from sven.backend import SvnAccess
 
-    import os         #
-    dir = os.getcwd() #sven bug
-
     svn = SvnAccess(svn_repo_location, svn_checkout_dir)
 
     svn.write(uri, document)
-
-    os.chdir(dir)     #
     
 def default_name_mapper(obj):    
     return '/'.join((obj.__class__.__module__.replace('.', '/'),
