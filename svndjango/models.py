@@ -23,6 +23,9 @@ class SubversionedMixin(object):
 
 from django.db import models
 class SubversionedModel(models.Model, SubversionedMixin):
+    class Meta:
+        abstract = True
+
     def save(self, *args, **kw):
         models.Model.save(self, *args, **kw)
         SubversionedMixin.save(self, *args, **kw)
