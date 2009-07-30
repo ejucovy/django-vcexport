@@ -20,6 +20,11 @@ a revision that ends up being rolled back in the RDB.
 Your model instances will be serialized to JSON and saved in repository paths that
 look like `/module/name/class/name/instance_pk`.
 
+To be honest, versioning a model wholesale seems like a pretty bad idea to me,
+unless you're very careful about versioning every related model, and unless you're
+versioning the model schemas side-by-side with the content. But it's fun to
+experiment with at least.
+
 To use the latter, your model should subclass svndjango.models.SVNDoc in the same
 manner. Text fields to be versioned must be declared explicitly, by using the
 svndjango.models.SubversionedTextField field instead of the standard TextField.
@@ -40,3 +45,5 @@ You will have to initialize your SVN repository and checkout on your own, though
 these may be automated in future versions. (Not that it's hard to do anyway)
 
 You must have pysvn installed.
+
+Originally developed at Columbia University's Center for New Media Teaching & Learning <http://ccnmtl.columbia.edu>
