@@ -1,11 +1,14 @@
 def deserialize(uri, contents, msg, kind, revs):
     from django.core import serializers
 
-    object = serializers.deserialize('json', contents)[0]
-    
-    object.save()
+    object = serializers.deserialize('json', contents)
 
-# use with sven as
-# x = SvnAccessEventEmitter()
-# x.add_event_listener(deserialize)
+    for obj in object:
+        obj.save()
+
+from sven.backend import SvnAccessEventEmitter as SvnAccess
+class DjangoAutoupdatingSvnAccess(SvnAccess):
+    def __init__(self, *args, **kw):
+        SvnAccess.__init__(self, *args, **kw)
+        self.listeners = [deserialize]
 
