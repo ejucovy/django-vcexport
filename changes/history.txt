@@ -1,3 +1,19 @@
+0.3 (08-10-2009)
+================
+
+ * Added `svndjango.sven.DjangoAutoupdatingSvnAccess` class
+   (depends on sven>=0.4) which will deserialize Django model
+   objects out of your committed documents and save them to
+   your Django database after the commit goes through.
+
+   Assumes you will have your Django environment and settings
+   properly installed at checkin-time, and assumes that all
+   checkins should be saved to the Django database.
+
+   If these conditions are met, use as a drop-in replacement
+   for `sven.backend.SvnAccess` (see that package's documentation
+   for usage)
+
 0.2 (07-30-2009)
 ================
 
