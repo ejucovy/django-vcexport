@@ -1,3 +1,9 @@
+0.2 (07-30-2009)
+================
+
+ * Declare sample SubversionedModel as an abstract base class so django won't create
+   a pointless database table for it.
+
 0.1 (07-24-2009)
 ================
 
