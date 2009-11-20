@@ -8,7 +8,8 @@ How it works
 ============
 
 1. It defines a post_save signal listener which serializes to a text
-   format and saves to the repository.
+   format and saves to the repository. You can disable the signal
+   in settings.py (see below)
 
 2. Each model that you wish to version should subclass its VersionedMixin
    model.
@@ -43,8 +44,11 @@ me, unless you're very careful about versioning every related model, and
 unless you're versioning the model schemas side-by-side with the content.
 But it's fun to experiment with at least.
 
+You can also customize the default serialization globally by overriding
+the template ``vcsexport/default.xml`` with your own.
+
 By default your model instances will be serialized to JSON and saved in
-repository paths that look like `/app_name/model_class_name/instance_pk`.
+repository paths that look like `/app_name/ModelClassName/instance_pk`.
 
 You can customize the path:
 
@@ -72,10 +76,28 @@ and a boolean ``created``, and return strings:
       def repository_commit_user(self, request, created):
           return request.user.username
 
+Unfortunately, `request` will be None if you use the automatic post_save
+signal. If you want to use data from the request, you should disable the
+signal (see below) and explicitly export the content after a save:
+
+  def my_view(request):
+      ...
+      versioned_object, created = MyModel.objects.get_or_create(...)
+      versioned_object.save()
+      versioned_object.export_to_repository(request, created)
+
+Both ``request`` and ``created`` are optional and default to None and
+False respectively.
+
 You must provide one piece of configuration in your settings.py file:
 
 * VCSEXPORT_CHECKOUT_DIR: the absolute path to a local checkout of the
   repository that you want to store your data in
+
+You can optionally provide a configuration setting to disable automatic
+saves with the post_save signal:
+
+  VCSEXPORT_AUTO_SAVE = False
 
 You will have to initialize your repository and checkout on your own.
 
