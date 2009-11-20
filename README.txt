@@ -17,15 +17,15 @@ How it works
    works well with `diff` and is generic.
 
 4. You can customize the serialization per model by passing a custom
-   template path in its metaclass:
+   template path as a class attribute:
     
      class MyModel(models.Model, VersionedMixin):
-         class Meta:
-             repository_template = 'fleem/document_format.txt'
+         repository_template = 'fleem/document_format.txt'
 
-   The template will be rendered with a single context variable ``object``
-   which is the model instance that was saved:
+   The template will be rendered with two context variables; ``object``
+   which is the model instance that was saved, and a boolean ``created``
 
+     {% if created %}New object!{% endif %}
      {{object.title}}
      {{object.related_field.pk}}
        ****
@@ -49,13 +49,6 @@ repository paths that look like `/app_name/model_class_name/instance_pk`.
 You can customize the path:
 
   class MyModel(models.Model, VersionedMixin):
-      class Meta:
-          repository_path_prefix = '/my_custom/path_for/this_model/'
-	  repository_path_instance_attribute = 'color'
-
-Or if you want complete control:
-
-  class MyModel(models.Model, VersionedMixin):
       def repository_path(self):
           return '/my_custom/path_for/this_model/' + self.color
 
@@ -68,16 +61,15 @@ The default commit message is uninteresting: "Object {{instance.pk}}
 The default committing user is undefined.
 
 You can customize both, with model methods that take a request object
-and return strings:
+and a boolean ``created``, and return strings:
 
   class MyModel(models.Model, VersionedMixin):
-      def repository_path(self):
-          return '/my_custom/path_for/this_model/' + self.color
-
-      def repository_commit_message(self, request):
+      def repository_commit_message(self, request, created):
+          if created:
+              return "User %s committed a new %s" % (request.user.username, self.color)
           return "User %s committed %s" % (request.user.username, self.color)
 
-      def repository_commit_user(self, request):
+      def repository_commit_user(self, request, created):
           return request.user.username
 
 You must provide one piece of configuration in your settings.py file:
