@@ -82,6 +82,8 @@ and a boolean ``created``, and return strings:
       def repository_commit_user(self, request, created):
           return request.user.username
 
+******** NOT YET IMPLEMENTED: username ***********
+
 Unfortunately, `request` will be None if you use the automatic post_save
 signal. If you want to use data from the request, you should disable the
 signal (see below) and explicitly export the content after a save:
