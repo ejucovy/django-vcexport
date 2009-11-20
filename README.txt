@@ -1,49 +1,93 @@
-This package provides some basic utilities for backing up django model instances
-to a Subversion repository. It is very experimental at this point and hasn't been
-tested in any meaningful environment.
+This package provides some basic utilities for backing up django model
+instances to a version-controlled repository. It is very experimental
+at this point and hasn't been tested in any meaningful environment.
 
-It does not provide any utilities for restoring live data from backups, though
-it may one day.
+It does not provide any utilities for restoring live data from backups.
 
-Two distinct use cases are supported:
+How it works
+============
+
+1. It defines a post_save signal listener which serializes to a text
+   format and saves to the repository.
+
+2. Each model that you wish to version should subclass its VersionedMixin
+   model.
+
+3. By default, models are serialized to django's XML format, because it
+   works well with `diff` and is generic.
+
+4. You can customize the serialization per model by passing a custom
+   template path in its metaclass:
+    
+     class MyModel(models.Model, VersionedMixin):
+         class Meta:
+             repository_template = 'fleem/document_format.txt'
+
+   The template will be rendered with a single context variable ``object``
+   which is the model instance that was saved:
+
+     {{object.title}}
+     {{object.related_field.pk}}
+       ****
+     Color: {{object.color}}
+     {{object.description}}
+
+This allows alternate use cases to be supported:
+
 * You want to version a model wholesale
-* You have a model which has one or two document-like text fields, and you want to
-  version those fields only
+* You have a model which has one or two document-like text fields, and you
+  want to version those fields only
 
-To use the former, you should subclass svndjango.models.SubversionedMixin and call
-its .save method from your own. svndjango.models.SubversionedModel is an example
-(which you can also just subclass directly and not worry about any of it, but it
-lacks flexibility) -- you probably want to call SubversionedMixin.save only after
-the "actual" .save to your RDB; this will ensure that you don't accidentally save
-a revision that ends up being rolled back in the RDB.
+To be honest, versioning a model wholesale seems like a pretty bad idea to
+me, unless you're very careful about versioning every related model, and
+unless you're versioning the model schemas side-by-side with the content.
+But it's fun to experiment with at least.
 
-Your model instances will be serialized to JSON and saved in repository paths that
-look like `/module/name/class/name/instance_pk`.
+By default your model instances will be serialized to JSON and saved in
+repository paths that look like `/app_name/model_class_name/instance_pk`.
 
-To be honest, versioning a model wholesale seems like a pretty bad idea to me,
-unless you're very careful about versioning every related model, and unless you're
-versioning the model schemas side-by-side with the content. But it's fun to
-experiment with at least.
+You can customize the path:
 
-To use the latter, your model should subclass svndjango.models.SVNDoc in the same
-manner. Text fields to be versioned must be declared explicitly, by using the
-svndjango.models.SubversionedTextField field instead of the standard TextField.
+  class MyModel(models.Model, VersionedMixin):
+      class Meta:
+          repository_path_prefix = '/my_custom/path_for/this_model/'
+	  repository_path_instance_attribute = 'color'
 
-Your text fields will be saved directly into the repository in repository paths
-that look like `/module/name/class/name/instance_pk/field_name`.
+Or if you want complete control:
+
+  class MyModel(models.Model, VersionedMixin):
+      def repository_path(self):
+          return '/my_custom/path_for/this_model/' + self.color
+
+Note that if you do this, you may end up with multiple model instances
+that save to the same file path in the repository. This is a feature.
+
+The default commit message is uninteresting: "Object {{instance.pk}}
+(from '{{app_name}}.{{model_name}}') saved by django-vcsexport."
+
+The default committing user is undefined.
+
+You can customize both, with model methods that take a request object
+and return strings:
+
+  class MyModel(models.Model, VersionedMixin):
+      def repository_path(self):
+          return '/my_custom/path_for/this_model/' + self.color
+
+      def repository_commit_message(self, request):
+          return "User %s committed %s" % (request.user.username, self.color)
+
+      def repository_commit_user(self, request):
+          return request.user.username
 
 You must provide one piece of configuration in your settings.py file:
-* SVNDJANGO_CHECKOUT_DIR: the absolute path to a local checkout of the repository
-  that you want to store your data in
 
-A second optional setting is supported:
-* SVNDJANGO_SILENT_FAILURES: if this is set to True, then any exceptions caused
-  by svndjango will be swallowed. This may be useful if you'd rather avoid user
-  errors than preserve a strictly full history of changes.
+* VCSEXPORT_CHECKOUT_DIR: the absolute path to a local checkout of the
+  repository that you want to store your data in
 
-You will have to initialize your SVN repository and checkout on your own, though
-these may be automated in future versions. (Not that it's hard to do anyway)
+You will have to initialize your repository and checkout on your own.
 
 You must have pysvn installed.
 
-Originally developed at Columbia University's Center for New Media Teaching & Learning <http://ccnmtl.columbia.edu>
+Originally developed at Columbia University's Center for New Media
+Teaching & Learning <http://ccnmtl.columbia.edu>
