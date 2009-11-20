@@ -44,8 +44,14 @@ me, unless you're very careful about versioning every related model, and
 unless you're versioning the model schemas side-by-side with the content.
 But it's fun to experiment with at least.
 
-You can also customize the default serialization globally by overriding
-the template ``vcsexport/default.xml`` with your own.
+*** NOT YET IMPLEMENTED ******
+* You can also customize the *
+* default serialization      *
+* globally by overriding     *
+* the template               *
+* ``vcsexport/default.xml``  *
+* with your own.             *
+******************************
 
 By default your model instances will be serialized to JSON and saved in
 repository paths that look like `/app_name/ModelClassName/instance_pk`.

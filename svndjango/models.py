@@ -1,10 +1,13 @@
 from django.conf import settings
+from django.core import serializers
 from django.db.models import signals
 from django.db.models.base import ModelBase
 from django.template.loader import render_to_string
 
+from sven.backend import SvnAccess
+
 class VersionedMixin(object):
-    repository_template = 'vcsexport/default.xml'
+    repository_template = None
 
     def repository_path(self):
         return "/%s/%s/%s" % (
@@ -25,9 +28,14 @@ class VersionedMixin(object):
             'created': created,
             }
         
-        document = render_to_string(
-            self.repository_template,
-            context)
+        if self.repository_template is not None:
+            document = render_to_string(
+                self.repository_template,
+                context)
+        else:
+            document = serializers.get_serializer("xml")().serialize(
+                self.__class__.objects.filter(pk=self.pk),
+                indent=2)
 
         path = self.repository_path()
 
