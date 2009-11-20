@@ -22,7 +22,8 @@ class VersionedMixin(object):
     def repository_commit_user(self, request, created):
         return None
 
-    def export_to_repository(self, request=None, created=False):
+    def export_to_repository(self, request=None, created=False,
+                             message=None, username=None):
         context = {
             'object': self,
             'created': created,
@@ -39,15 +40,16 @@ class VersionedMixin(object):
 
         path = self.repository_path()
 
-        commit_message = self.repository_commit_message(
-            request, created)
-        #user = self.repository_commit_user(
-        #    request, created)
+        if message is None:
+            message = self.repository_commit_message(
+                request, created)
+        #if username is None:
+        #    username = self.repository_commit_user(request, created)
 
         checkout_dir = settings.VCSEXPORT_CHECKOUT_DIR
 
         svn = SvnAccess(checkout_dir)
-        return svn.write(path, document, msg=commit_message) #, user=user)
+        return svn.write(path, document, msg=message) #, user=username)
 
 def export_to_repository(sender, instance, created, **kwargs):
     instance.export_to_repository(created=created)

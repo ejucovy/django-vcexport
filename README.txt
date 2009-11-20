@@ -95,7 +95,14 @@ signal (see below) and explicitly export the content after a save:
       versioned_object.export_to_repository(request, created)
 
 Both ``request`` and ``created`` are optional and default to None and
-False respectively.
+False respectively. You can also pass a commit message and/or username
+to `export_to_repository` directly:
+
+  versioned_object.export_to_repository(message="Foo", 
+                                        username=request.user.username)
+
+The method will return the Revision of the commit, or None if there
+were no changes to apply.
 
 You must provide one piece of configuration in your settings.py file:
 
