@@ -16,7 +16,7 @@ class VersionedMixin(object):
             self.pk)
         
     def repository_commit_message(self, request, created):
-        return "Object %s (from '%s.%s') saved by django-vcsexport." % (
+        return "Object %s (from '%s.%s') saved by django-vcexport." % (
             self.pk, self._meta.app_label, self._meta.object_name)
 
     def repository_commit_user(self, request, created):
@@ -43,10 +43,11 @@ class VersionedMixin(object):
         if message is None:
             message = self.repository_commit_message(
                 request, created)
+
         #if username is None:
         #    username = self.repository_commit_user(request, created)
 
-        checkout_dir = settings.VCSEXPORT_CHECKOUT_DIR
+        checkout_dir = settings.VCEXPORT_CHECKOUT_DIR
 
         svn = SvnAccess(checkout_dir)
         return svn.write(path, document, msg=message) #, user=username)
@@ -54,6 +55,6 @@ class VersionedMixin(object):
 def export_to_repository(sender, instance, created, **kwargs):
     instance.export_to_repository(created=created)
 
-if getattr(settings, 'VCSEXPORT_AUTO_SAVE', True):
+if getattr(settings, 'VCEXPORT_AUTO_SAVE', True):
     signals.post_save.connect(export_to_repository, sender=VersionedMixin)
 

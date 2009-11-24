@@ -1,3 +1,10 @@
+"""
+Some optional stuff for/about sven. Experimental.
+
+You can (potentially) use DjangoAutoupdatingSvnAccess as a Sven backend
+which will update your django database when repository content changes.
+"""
+
 def deserialize(uri, contents, msg, kind, revs):
     from django.core import serializers
 
