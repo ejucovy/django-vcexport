@@ -49,7 +49,7 @@ But it's fun to experiment with at least.
 * default serialization      *
 * globally by overriding     *
 * the template               *
-* ``vcsexport/default.xml``  *
+* ``vcexport/default.xml``  *
 * with your own.             *
 ******************************
 
@@ -66,7 +66,7 @@ Note that if you do this, you may end up with multiple model instances
 that save to the same file path in the repository. This is a feature.
 
 The default commit message is uninteresting: "Object {{instance.pk}}
-(from '{{app_name}}.{{model_name}}') saved by django-vcsexport."
+(from '{{app_name}}.{{model_name}}') saved by django-vcexport."
 
 The default committing user is undefined.
 
@@ -106,13 +106,13 @@ were no changes to apply.
 
 You must provide one piece of configuration in your settings.py file:
 
-* VCSEXPORT_CHECKOUT_DIR: the absolute path to a local checkout of the
+* VCEXPORT_CHECKOUT_DIR: the absolute path to a local checkout of the
   repository that you want to store your data in
 
 You can optionally provide a configuration setting to disable automatic
 saves with the post_save signal:
 
-  VCSEXPORT_AUTO_SAVE = False
+  VCEXPORT_AUTO_SAVE = False
 
 You will have to initialize your repository and checkout on your own.
 
