@@ -55,6 +55,5 @@ class VersionedMixin(object):
 def export_to_repository(sender, instance, created, **kwargs):
     instance.export_to_repository(created=created)
 
-if getattr(settings, 'VCEXPORT_AUTO_SAVE', True):
-    signals.post_save.connect(export_to_repository, sender=VersionedMixin)
-
+def register(cls):
+    signals.post_save.connect(export_to_repository, sender=cls)
