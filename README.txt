@@ -16,7 +16,6 @@ How it works
 
      import vcexport
      vcexport.register(MyModel)
-     vcexport.register(AnotherModel, AThirdModel)
 
    This will connect a post_save signal.
 
@@ -46,15 +45,6 @@ How it works
       and you want to version those fields only -- just don't write out
       any other fields in the serialization template.
 
-      *** NOT YET IMPLEMENTED ******
-      * You can also customize the *
-      * default serialization      *
-      * globally by overriding     *
-      * the template               *
-      * ``vcexport/default.xml``   *
-      * with your own.             *
-      ******************************
-
 5. By default the document dumps of your model instances will be saved in
    repository paths that look like `/app_name/ModelClassName/instance_pk`.
 
@@ -70,10 +60,12 @@ How it works
 6. The default commit message is uninteresting: "Object {{instance.pk}}
    (from '{{app_name}}.{{model_name}}') saved by django-vcexport."
 
-   The default committing user is undefined.
+   The default committing user is undefined. At present you cannot
+   customize this.
 
-   You can customize both, with model methods that take a request object
-   and a boolean ``created``, and return strings::
+   You can customize the commit message with a model method that
+   takes a request object and a boolean ``created``, and returns 
+   a string::
 
      class MyModel(models.Model, VersionedMixin):
          def repository_commit_message(self, request, created):
@@ -82,11 +74,6 @@ How it works
  		   request.user.username, self.color)
              return "User %s committed %s" % (request.user.username, 
 	     	    	     	       	      self.color)
-
-         def repository_commit_user(self, request, created):
-             return request.user.username
-
-******** NOT YET IMPLEMENTED: username ***********
 
 7. You can also export the content explicitly, for example in your model's
    .save() method, in view code, etc. Use the ``export_to_repository``
