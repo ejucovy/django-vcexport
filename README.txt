@@ -32,7 +32,7 @@ will subclass the default base to customize the behavior on a per-model basis.
 
 2. You can customize the export behavior on a per-model basis by subclassing
    `vcexport.models.Exporter` and telling vcexport to register your model with
-   the custom Exporter:
+   the custom Exporter::
 
      class MyExporter(vcexport.models.Exporter):
        ...
