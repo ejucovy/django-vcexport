@@ -7,6 +7,22 @@ It does not provide any utilities for restoring live data from backups.
 How it works
 ============
 
+There is an application-level API and a model-level API.
+
+Use the model-level API to define export behavior per model class, with
+automatic exports on save.
+
+Use the application-level API to define export behavior in views (for
+example) and explicitly trigger content export from your own code.
+
+The model-level API
+-------------------
+
+The design is inspired by Django's ModelAdmin and ModelForm aspect-oriented
+pattern. The core behaviors are defined in the `vcexport.models.Exporter`
+class, which is analogous to ModelAdmin. Like ModelAdmin and ModelForm, you 
+will subclass the default base to customize the behavior on a per-model basis.
+
 1. For automatic versioning of models, register them with vcexport::
 
      import vcexport
@@ -14,10 +30,9 @@ How it works
 
    This will connect a post_save signal.
 
-2. You can customize the export behavior on a per-model basis. The default
-   behaviors are defined in the vcexport.models.Exporter class. Subclass it
-   to redefine behavior. To register your new export behaviors, pass it to
-   the `register` function:
+2. You can customize the export behavior on a per-model basis by subclassing
+   `vcexport.models.Exporter` and telling vcexport to register your model with
+   the custom Exporter:
 
      class MyExporter(vcexport.models.Exporter):
        ...
@@ -61,11 +76,11 @@ How it works
    Note that if you do this, you may end up with multiple model instances
    that save to the same file path in the repository. This is a feature.
 
-6. The default commit message is uninteresting: "Object {{instance.pk}}
-   (from '{{app_name}}.{{model_name}}') saved by django-vcexport."
-
-   The default committing user is undefined. At present you cannot
+6. The default committing user is undefined. At present you cannot
    customize this.
+
+   The default commit message is uninteresting: "Object {{instance.pk}}
+   (from '{{app_name}}.{{model_name}}') saved by django-vcexport."
 
    You can customize the commit message with a model method that
    takes a boolean ``created``, and returns a string::
@@ -78,29 +93,43 @@ How it works
              return "User %s committed %s" % (self.object.user.username, 
 	     	    	     	       	      self.object.color)
 
-7. You can also export the content explicitly, for example in your model's
-   .save() method, in view code, etc. Use the ``export_to_repository``
-   method, which, like ``repository_commit_message`` and ``repository_commit_user``,
-   optionally takes a ``request`` argument. This allows you to encapsulate
-   your logic for getting relevant data out of the request in your overrides
-   of those methods. (I'm not sure about this. I might get rid of it in
-   the next version.) Example::
+The application-level API
+-------------------------
 
-     def my_view(request):
-         ...
-	 versioned_object, created = MyModel.objects.get_or_create(...)
-	 versioned_object.save()
-         versioned_object.export_to_repository(request, created)
+You can also export the content explicitly, for example in your model's
+`save()` method, in view code, etc, with the `vcexport.export_to_repository`
+function::
 
-   Both ``request`` and ``created`` are optional and default to None and
-   False respectively. You can also pass a commit message and/or username
-   to `export_to_repository` directly::
+  def my_view(request):
+      ...
+      object = MyModel.objects.get(...)
+      object.morx = request.POST['new_morx']
+      object.save()
 
-     versioned_object.export_to_repository(message="Foo", 
-                                          username=request.user.username)
+      import vcexport
+      vcexport.export_to_repository(object)
 
-   The method will return the Revision of the commit, or None if there
-   were no changes to apply.
+The default template, commit message, etc are the same as with the model API.
+You can customize them in your own code and pass them to `export_to_repository`::
+
+  def my_view(request):
+      ...
+      object, created = MyModel.objects.get_or_create(...)
+      object.morx = request.POST['new_morx']
+      object.save()
+
+      import vcexport
+      vcexport.export_to_repository(
+                 object, created=created,
+                 repository_template='/fleem/morx.html',
+                 message="Changed the morx",
+                 repository_path='/fleem/objects/%s' % object.pk)
+
+The `export_to_repository` function will return the Revision of the commit,
+or None if there were no changes to commit.   
+
+Configuration
+=============
 
 You must provide one piece of configuration in your settings.py file:
 
@@ -109,7 +138,8 @@ You must provide one piece of configuration in your settings.py file:
 
 You will have to initialize your repository and checkout on your own.
 
-You must have pysvn installed.
+To use with Subversion, you must have pysvn installed.
+
 
 Originally developed at Columbia University's Center for New Media
 Teaching & Learning <http://ccnmtl.columbia.edu>

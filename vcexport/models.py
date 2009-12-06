@@ -63,7 +63,8 @@ class Exporter(object):
 
 def export_to_repository(object,
                          created=False,
-                         message=None, username=None,
+                         message=None,
+                         repository_path=None,
                          repository_template=None):
     context = {
         'object': object,
