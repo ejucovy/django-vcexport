@@ -6,18 +6,25 @@ from django.template.loader import render_to_string
 
 from sven.backend import SvnAccess
 
+def default_repository_path(object):
+    return "/%s/%s/%s" % (
+        object._meta.app_label,
+        object._meta.object_name,
+        object.pk)
+
+def default_repository_commit_message(object, created):
+    return "Object %s (from '%s.%s') saved by django-vcexport." % (
+        object.pk, object._meta.app_label, object._meta.object_name)
+
+
 class Exporter(object):
     repository_template = None
 
     def repository_path(self):
-        return "/%s/%s/%s" % (
-            self.object._meta.app_label,
-            self.object._meta.object_name,
-            self.object.pk)
+        return default_repository_path(self.object)
         
     def repository_commit_message(self, created):
-        return "Object %s (from '%s.%s') saved by django-vcexport." % (
-            self.object.pk, self.object._meta.app_label, self.object._meta.object_name)
+        return default_repository_commit_message(self.object, created)
 
     def repository_commit_user(self, created):
         return None
@@ -36,7 +43,7 @@ class Exporter(object):
                 context)
         else:
             document = serializers.get_serializer("xml")().serialize(
-                self.object.__class__.objects.filter(pk=self.pk),
+                self.object.__class__.objects.filter(pk=self.object.pk),
                 indent=2)
 
         path = self.repository_path()
@@ -47,16 +54,45 @@ class Exporter(object):
         #if username is None:
         #    username = self.repository_commit_user(created)
 
-        checkout_dir = settings.VCEXPORT_CHECKOUT_DIR
-
-        svn = SvnAccess(checkout_dir)
-        return svn.write(path, document, msg=message) #, user=username)
+        return export_to_repository(self.object,
+                                    created, message, username,
+                                    repository_template)
 
     def __init__(self, context):
         self.object = context
 
+def export_to_repository(object,
+                         created=False,
+                         message=None, username=None,
+                         repository_template=None):
+    context = {
+        'object': object,
+        'created': created,
+        }
+    
+    if repository_template is not None:
+        document = render_to_string(
+            repository_template,
+            context)
+    else:
+        document = serializers.get_serializer("xml")().serialize(
+            object.__class__.objects.filter(pk=object.pk),
+            indent=2)
 
-def export_to_repository(sender, instance, created, **kwargs):
+    path = repository_path or default_repository_path(object)
+
+    if message is None:
+        message = default_repository_commit_message(object, created)
+
+    #if username is None:
+    #    username = default_repository_commit_user(object, created)
+
+    checkout_dir = settings.VCEXPORT_CHECKOUT_DIR
+
+    svn = SvnAccess(checkout_dir)
+    return svn.write(path, document, msg=message) #, user=username)
+
+def post_save_exporter(sender, instance, created, **kwargs):
     exporter = _registry.get(sender) or Exporter
 
     exportable = exporter(instance)
@@ -67,4 +103,4 @@ def register(cls, exporter=None):
     if exporter is not None:
         _registry[cls] = exporter
     
-    signals.post_save.connect(export_to_repository, sender=cls)
+    signals.post_save.connect(post_save_exporter, sender=cls)
