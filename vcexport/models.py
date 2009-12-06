@@ -26,7 +26,7 @@ class Exporter(object):
                              created=False,
                              message=None, username=None):
         context = {
-            'object': self.obj,
+            'object': self.object,
             'created': created,
             }
         
@@ -56,11 +56,15 @@ class Exporter(object):
         self.object = context
 
 
+def export_to_repository(sender, instance, created, **kwargs):
+    exporter = _registry.get(sender) or Exporter
+
+    exportable = exporter(instance)
+    exportable.export_to_repository(created=created)
+
+_registry = {}
 def register(cls, exporter=None):
-    exporter = exporter or Exporter
-
-    def export_to_repository(sender, instance, created, **kwargs):
-        exportable = exporter(instance)
-        exportable.export_to_repository(created=created)
-
+    if exporter is not None:
+        _registry[cls] = exporter
+    
     signals.post_save.connect(export_to_repository, sender=cls)
