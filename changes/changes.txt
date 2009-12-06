@@ -1,1 +1,4 @@
-Split apart distinct APIs for model-level behavior and application-level usage.
+Brown-bag release; made ``export_to_repository`` function available as
+public API (``vcexport.export_to_repository``)
+
+

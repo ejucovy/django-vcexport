@@ -1,5 +1,10 @@
+0.5 (06-12-09)
+--------------
+
+Split apart distinct APIs for model-level behavior and application-level usage.
+
 0.4 (24-11-09)
-==============
+--------------
 
 Initial release. This package was previously called `svndjango`. It was
 redesigned from the ground up and renamed `django-vcexport` to describe
