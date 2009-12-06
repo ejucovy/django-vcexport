@@ -1,8 +1,3 @@
-This package provides some basic utilities for backing up django model
-instances to a version-controlled repository. It is very experimental
-at this point and hasn't been tested in any meaningful environment.
-
-It does not provide any utilities for restoring live data from backups.
 
 How it works
 ============
@@ -19,7 +14,7 @@ The model-level API
 -------------------
 
 The design is inspired by Django's ModelAdmin and ModelForm aspect-oriented
-pattern. The core behaviors are defined in the `vcexport.models.Exporter`
+pattern. The core behaviors are defined in the ``vcexport.models.Exporter``
 class, which is analogous to ModelAdmin. Like ModelAdmin and ModelForm, you 
 will subclass the default base to customize the behavior on a per-model basis.
 
@@ -31,7 +26,7 @@ will subclass the default base to customize the behavior on a per-model basis.
    This will connect a post_save signal.
 
 2. You can customize the export behavior on a per-model basis by subclassing
-   `vcexport.models.Exporter` and telling vcexport to register your model with
+   ``vcexport.models.Exporter`` and telling vcexport to register your model with
    the custom Exporter::
 
      class MyExporter(vcexport.models.Exporter):
@@ -39,7 +34,7 @@ will subclass the default base to customize the behavior on a per-model basis.
      vcexport.register(MyModel, exporter=MyExporter)
 
 3. By default, models are serialized to django's XML format, because it
-   works well with `diff` and is generic.
+   works well with ``diff`` and is generic.
 
 4. You can customize the serialization per model by passing a custom
    template path as a class attribute::
@@ -65,7 +60,7 @@ will subclass the default base to customize the behavior on a per-model basis.
       any other fields in the serialization template.
 
 5. By default the document dumps of your model instances will be saved in
-   repository paths that look like `/app_name/ModelClassName/instance_pk`.
+   repository paths that look like ``/app_name/ModelClassName/instance_pk``.
 
    You can customize the path::
 
@@ -97,7 +92,7 @@ The application-level API
 -------------------------
 
 You can also export the content explicitly, for example in your model's
-`save()` method, in view code, etc, with the `vcexport.export_to_repository`
+``save()`` method, in view code, etc, with the ``vcexport.export_to_repository``
 function::
 
   def my_view(request):
@@ -110,7 +105,7 @@ function::
       vcexport.export_to_repository(object)
 
 The default template, commit message, etc are the same as with the model API.
-You can customize them in your own code and pass them to `export_to_repository`::
+You can customize them in your own code and pass them to ``export_to_repository``::
 
   def my_view(request):
       ...
@@ -125,7 +120,7 @@ You can customize them in your own code and pass them to `export_to_repository`:
                  message="Changed the morx",
                  repository_path='/fleem/objects/%s' % object.pk)
 
-The `export_to_repository` function will return the Revision of the commit,
+The ``export_to_repository`` function will return the Revision of the commit,
 or None if there were no changes to commit.   
 
 Configuration
