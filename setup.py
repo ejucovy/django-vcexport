@@ -10,7 +10,7 @@ history = open('changes/history.txt').read()
 long_description = """
 %s
 
-New in version %s
+New in this version
 ===================
 
 %s
@@ -18,7 +18,7 @@ New in version %s
 History
 =======
 
-%s""" % (long_description,version,new_in_this_version,history)
+%s""" % (long_description,new_in_this_version,history)
 
 setup(name='django-vcexport',
       version=version,
