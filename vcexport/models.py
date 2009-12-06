@@ -6,26 +6,27 @@ from django.template.loader import render_to_string
 
 from sven.backend import SvnAccess
 
-class VersionedMixin(object):
+class Exporter(object):
     repository_template = None
 
     def repository_path(self):
         return "/%s/%s/%s" % (
-            self._meta.app_label,
-            self._meta.object_name,
-            self.pk)
+            self.object._meta.app_label,
+            self.object._meta.object_name,
+            self.object.pk)
         
-    def repository_commit_message(self, request, created):
+    def repository_commit_message(self, created):
         return "Object %s (from '%s.%s') saved by django-vcexport." % (
-            self.pk, self._meta.app_label, self._meta.object_name)
+            self.object.pk, self.object._meta.app_label, self.object._meta.object_name)
 
-    def repository_commit_user(self, request, created):
+    def repository_commit_user(self, created):
         return None
 
-    def export_to_repository(self, request=None, created=False,
+    def export_to_repository(self, 
+                             created=False,
                              message=None, username=None):
         context = {
-            'object': self,
+            'object': self.obj,
             'created': created,
             }
         
@@ -35,25 +36,31 @@ class VersionedMixin(object):
                 context)
         else:
             document = serializers.get_serializer("xml")().serialize(
-                self.__class__.objects.filter(pk=self.pk),
+                self.object.__class__.objects.filter(pk=self.pk),
                 indent=2)
 
         path = self.repository_path()
 
         if message is None:
-            message = self.repository_commit_message(
-                request, created)
+            message = self.repository_commit_message(created)
 
         #if username is None:
-        #    username = self.repository_commit_user(request, created)
+        #    username = self.repository_commit_user(created)
 
         checkout_dir = settings.VCEXPORT_CHECKOUT_DIR
 
         svn = SvnAccess(checkout_dir)
         return svn.write(path, document, msg=message) #, user=username)
 
-def export_to_repository(sender, instance, created, **kwargs):
-    instance.export_to_repository(created=created)
+    def __init__(self, context):
+        self.object = context
 
-def register(cls):
+
+def register(cls, exporter=None):
+    exporter = exporter or Exporter
+
+    def export_to_repository(sender, instance, created, **kwargs):
+        exportable = exporter(instance)
+        exportable.export_to_repository(created=created)
+
     signals.post_save.connect(export_to_repository, sender=cls)

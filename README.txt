@@ -7,17 +7,21 @@ It does not provide any utilities for restoring live data from backups.
 How it works
 ============
 
-1. Each model that you wish to version should subclass vcexport's
-   models.VersionedMixin class. It defines an `export_to_repository`
-   method which serializes the instance to a text format and saves
-   to the repository.
-
-2. For automatic versioning of models, register them with vcexport::
+1. For automatic versioning of models, register them with vcexport::
 
      import vcexport
      vcexport.register(MyModel)
 
    This will connect a post_save signal.
+
+2. You can customize the export behavior on a per-model basis. The default
+   behaviors are defined in the vcexport.models.Exporter class. Subclass it
+   to redefine behavior. To register your new export behaviors, pass it to
+   the `register` function:
+
+     class MyExporter(vcexport.models.Exporter):
+       ...
+     vcexport.register(MyModel, exporter=MyExporter)
 
 3. By default, models are serialized to django's XML format, because it
    works well with `diff` and is generic.
@@ -25,7 +29,7 @@ How it works
 4. You can customize the serialization per model by passing a custom
    template path as a class attribute::
     
-     class MyModel(models.Model, VersionedMixin):
+     class MyExporter(Exporter):
          repository_template = 'fleem/document_format.txt'
 
    The template will be rendered with two context variables; ``object``
@@ -50,9 +54,9 @@ How it works
 
    You can customize the path::
 
-     class MyModel(models.Model, VersionedMixin):
+     class MyExporter(Exporter):
          def repository_path(self):
-     	     return '/my_custom/path_for/this_model/' + self.color
+     	     return '/my_custom/path_for/this_model/' + self.object.color
 
    Note that if you do this, you may end up with multiple model instances
    that save to the same file path in the repository. This is a feature.
@@ -64,16 +68,15 @@ How it works
    customize this.
 
    You can customize the commit message with a model method that
-   takes a request object and a boolean ``created``, and returns 
-   a string::
+   takes a boolean ``created``, and returns a string::
 
-     class MyModel(models.Model, VersionedMixin):
-         def repository_commit_message(self, request, created):
+     class MyExporter(Exporter):
+         def repository_commit_message(self, created):
              if created:
                  return "User %s committed a new %s" % (
- 		   request.user.username, self.color)
-             return "User %s committed %s" % (request.user.username, 
-	     	    	     	       	      self.color)
+ 		   self.object.user.username, self.object.color)
+             return "User %s committed %s" % (self.object.user.username, 
+	     	    	     	       	      self.object.color)
 
 7. You can also export the content explicitly, for example in your model's
    .save() method, in view code, etc. Use the ``export_to_repository``

@@ -1,0 +1,7 @@
+0.4 (24-11-09)
+==============
+
+Initial release. This package was previously called `svndjango`. It was
+redesigned from the ground up and renamed `django-vcexport` to describe
+more accurately what it does.
+
