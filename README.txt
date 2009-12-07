@@ -123,6 +123,32 @@ You can customize them in your own code and pass them to ``export_to_repository`
 The ``export_to_repository`` function will return the Revision of the commit,
 or None if there were no changes to commit.   
 
+A middle ground
+---------------
+
+You may want both the organizational benefits of grouping your behavioral
+definitions into an Exporter, and the flexibility of triggering exports
+explicitly in your application code.
+
+You can invoke an Exporter instance directly to satisfy this yen::
+
+  def my_view(request):
+      ...
+      object, created = MyModel.objects.get_or_create(...)
+      object.morx = request.POST['new_morx']
+      object.save()
+
+      exporter = MyExporterSubclass(object)
+
+      exporter.export_to_repository(object, created=created)
+ 
+Like ``vcexport.export_to_repository`` this will return the Revision of
+the commit or None if the operation resulted in no committed changes. 
+
+If you want to do this, you will likely not want to register the same
+models for automatic post_save export -- but maybe you do!
+
+
 Configuration
 =============
 
