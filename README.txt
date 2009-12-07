@@ -157,10 +157,19 @@ You must provide one piece of configuration in your settings.py file:
 * VCEXPORT_CHECKOUT_DIR: the absolute path to a local checkout of the
   repository that you want to store your data in
 
-You will have to initialize your repository and checkout on your own.
+You may provide additional settings.py configuration:
+
+ * VCEXPORT_BACKEND: one of 'svn' or 'hg'
 
 To use with Subversion, you must have pysvn installed.
 
+To use with Mercurial, you must have mercurial installed.
+
+You will have to initialize your repository // checkout on your own.
+
+
+Credits
+=======
 
 Originally developed at Columbia University's Center for New Media
 Teaching & Learning <http://ccnmtl.columbia.edu>

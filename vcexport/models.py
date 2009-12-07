@@ -4,8 +4,6 @@ from django.db.models import signals
 from django.db.models.base import ModelBase
 from django.template.loader import render_to_string
 
-from sven.backend import SvnAccess
-
 def default_repository_path(object):
     return "/%s/%s/%s" % (
         object._meta.app_label,
@@ -16,6 +14,28 @@ def default_repository_commit_message(object, created):
     return "Object %s (from '%s.%s') saved by django-vcexport." % (
         object.pk, object._meta.app_label, object._meta.object_name)
 
+_utility = None
+def get_utility():
+    global _utility
+    if _utility is not None:
+        return _utility
+
+    if not hasattr(settings, 'VCEXPORT_BACKEND'):
+        backend = 'svn'
+    else:
+        backend = settings.VCEXPORT_BACKEND
+
+    # defer imports so we don't end up with ImportErrors about pysvn 
+    # or mercurial ii a user doesn't have them installed and isn't
+    # trying to use a backend that needs them
+    if backend == 'svn':
+        from sven.backend import SvnAccess
+        _utility = SvnAccess
+        return SvnAccess
+    if backend == 'hg':
+        from sven.hg import HgAccess
+        _utility = HgAccess
+        return HgAccess
 
 class Exporter(object):
     repository_template = None
@@ -90,7 +110,9 @@ def export_to_repository(object,
 
     checkout_dir = settings.VCEXPORT_CHECKOUT_DIR
 
-    svn = SvnAccess(checkout_dir)
+    backend_factory = get_utility()
+
+    svn = backend_factory(checkout_dir)
     return svn.write(path, document, msg=message) #, user=username)
 
 def post_save_exporter(sender, instance, created, **kwargs):
