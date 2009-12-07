@@ -57,15 +57,6 @@ class Exporter(object):
             'created': created,
             }
         
-        if self.repository_template is not None:
-            document = render_to_string(
-                self.repository_template,
-                context)
-        else:
-            document = serializers.get_serializer("xml")().serialize(
-                self.object.__class__.objects.filter(pk=self.object.pk),
-                indent=2)
-
         path = self.repository_path()
 
         if message is None:
@@ -76,7 +67,7 @@ class Exporter(object):
 
         return export_to_repository(self.object,
                                     created, message, username,
-                                    repository_template)
+                                    self.repository_template)
 
     def __init__(self, context):
         self.object = context
