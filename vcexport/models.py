@@ -38,13 +38,14 @@ def get_utility():
         return HgAccess
 
 class Exporter(object):
+
     repository_template = None
 
     def repository_path(self):
-        return default_repository_path(self.object)
+        return None
         
     def repository_commit_message(self, created):
-        return default_repository_commit_message(self.object, created)
+        return None
 
     def repository_commit_user(self, created):
         return None
@@ -52,21 +53,18 @@ class Exporter(object):
     def export_to_repository(self, 
                              created=False,
                              message=None, username=None):
-        context = {
-            'object': self.object,
-            'created': created,
-            }
-        
-        path = self.repository_path()
 
         if message is None:
             message = self.repository_commit_message(created)
 
-        #if username is None:
-        #    username = self.repository_commit_user(created)
+        repository_path = self.repository_path()
+
+        repository_template = self.repository_template
 
         return export_to_repository(self.object,
-                                    created, message, username,
+                                    created, 
+                                    message,
+                                    repository_path,
                                     self.repository_template)
 
     def __init__(self, context):
@@ -77,11 +75,17 @@ def export_to_repository(object,
                          message=None,
                          repository_path=None,
                          repository_template=None):
+
+    if message is None:
+        message = default_repository_commit_message(object, created)
+
+    if repository_path is None:
+        repository_path = default_repository_path(object)
+
     context = {
         'object': object,
         'created': created,
         }
-    
     if repository_template is not None:
         document = render_to_string(
             repository_template,
@@ -91,20 +95,12 @@ def export_to_repository(object,
             object.__class__.objects.filter(pk=object.pk),
             indent=2)
 
-    path = repository_path or default_repository_path(object)
-
-    if message is None:
-        message = default_repository_commit_message(object, created)
-
-    #if username is None:
-    #    username = default_repository_commit_user(object, created)
-
     checkout_dir = settings.VCEXPORT_CHECKOUT_DIR
 
     backend_factory = get_utility()
 
     svn = backend_factory(checkout_dir)
-    return svn.write(path, document, msg=message) #, user=username)
+    return svn.write(path, document, msg=message)
 
 def post_save_exporter(sender, instance, created, **kwargs):
     exporter = _registry.get(sender) or Exporter
