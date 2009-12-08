@@ -116,7 +116,7 @@ You can customize them in your own code and pass them to ``export_to_repository`
       import vcexport
       vcexport.export_to_repository(
                  object, created=created,
-                 repository_template='/fleem/morx.html',
+                 repository_template='fleem/morx.html',
                  message="Changed the morx",
                  repository_path='/fleem/objects/%s' % object.pk)
 
