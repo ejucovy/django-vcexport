@@ -100,7 +100,7 @@ def export_to_repository(object,
     backend_factory = get_utility()
 
     svn = backend_factory(checkout_dir)
-    return svn.write(path, document, msg=message)
+    return svn.write(repository_path, document, msg=message)
 
 def post_save_exporter(sender, instance, created, **kwargs):
     exporter = _registry.get(sender) or Exporter
