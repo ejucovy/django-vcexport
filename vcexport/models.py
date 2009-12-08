@@ -52,7 +52,7 @@ class Exporter(object):
 
     def export_to_repository(self, 
                              created=False,
-                             message=None, username=None):
+                             message=None):
 
         if message is None:
             message = self.repository_commit_message(created)
