@@ -173,3 +173,5 @@ Credits
 
 Originally developed at Columbia University's Center for New Media
 Teaching & Learning <http://ccnmtl.columbia.edu>
+
+The source code is available on github <http://github.com/ejucovy/django-vcexport>
