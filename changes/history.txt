@@ -1,3 +1,9 @@
+0.5.1 (06-12-09)
+----------------
+
+Brown-bag release; made ``export_to_repository`` function available as
+public API (``vcexport.export_to_repository``)
+
 0.5 (06-12-09)
 --------------
 
