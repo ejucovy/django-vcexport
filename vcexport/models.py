@@ -36,6 +36,10 @@ def get_utility():
         from sven.hg import HgAccess
         _utility = HgAccess
         return HgAccess
+    if backend == 'bzr':
+        from sven.bzr import BzrAccess
+        _utility = BzrAccess
+        return BzrAccess
 
 class Exporter(object):
 

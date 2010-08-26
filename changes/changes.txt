@@ -1,2 +1,5 @@
 * Made ``Exporter`` importable as ``vcexport.Exporter``
 
+* Removed 'hg' option for VCEXPORT_BACKEND, since sven no longer supports this.
+
+* Added new 'bzr' option for VCEXPORT_BACKEND.

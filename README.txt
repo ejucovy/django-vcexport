@@ -159,11 +159,16 @@ You must provide one piece of configuration in your settings.py file:
 
 You may provide additional settings.py configuration:
 
- * VCEXPORT_BACKEND: one of 'svn' or 'hg'
+ * VCEXPORT_BACKEND: one of 'svn' or 'bzr'
 
 To use with Subversion, you must have pysvn installed.
 
-To use with Mercurial, you must have mercurial installed.
+To use with Bazaar, you must have bazaar installed.
+
+If this setting is not specified, the default is Subversion; however,
+Bazaar is really a better backend in a lot of ways (including speed
+for synchronous commits) and will likely become the primary supported
+backend in the future.
 
 You will have to initialize your repository // checkout on your own.
 
