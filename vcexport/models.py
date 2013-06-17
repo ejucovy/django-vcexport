@@ -40,6 +40,10 @@ def get_utility():
         from sven.bzr import BzrAccess
         _utility = BzrAccess
         return BzrAccess
+    if backend == 'git':
+        from vcexport.git_utility import GitBackend
+        _utility = GitBackend
+        return GitBackend
 
 class Exporter(object):
 
